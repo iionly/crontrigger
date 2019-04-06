@@ -2,96 +2,66 @@
 /**
  * Elgg Cron trigger.
  * When enabled this plugin provides "poor man's cron" functionality to trigger elgg cron scripts without the need
- * to install the cron script.
+ * to set up cronjobs on the server.
  *
- * Note, this is a substitute and not a replacement for the cron script. It is recommended that you use the cron script
+ * Note, this is a substitute and not a replacement for proper cronjobs. It is recommended that you use cronjobs
  * where possible.
  *
- * @package ElggCronTrigger
  */
 
-// Initialise plugin
 elgg_register_event_handler('init', 'system', 'crontrigger_init');
 
-/**
- * Initialise the plugin.
- *
- */
 function crontrigger_init() {
 	elgg_register_event_handler('shutdown', 'system', 'crontrigger_shutdownhook');
 }
 
-function crontrigger_trigger($period) {
-	$now = time();
-	$params = array();
-	$params['time'] = $now;
-	elgg_trigger_plugin_hook('cron', $period, $params, "");
-}
-
-function crontrigger_minute() {
-	crontrigger_trigger('minute');
-}
-
-function crontrigger_fiveminute() {
-	crontrigger_trigger('fiveminute');
-}
-
-function crontrigger_fifteenmin() {
-	crontrigger_trigger('fifteenmin');
-}
-
-function crontrigger_halfhour() {
-	crontrigger_trigger('halfhour');
-}
-
-function crontrigger_hourly() {
-	crontrigger_trigger('hourly');
-}
-
-function crontrigger_daily() {
-	crontrigger_trigger('daily');
-}
-
-function crontrigger_weekly() {
-	crontrigger_trigger('weekly');
-}
-
-function crontrigger_monthly() {
-	crontrigger_trigger('monthly');
-}
-
-function crontrigger_yearly() {
-	crontrigger_trigger('yearly');
-}
-
 /**
- * Call cron hooks after a page has been displayed (so user won't notice any slowdown).
- *
- * It uses a mod of now and needs someone to view the page within a certain time period
+ * Triggers cron hooks after a page has been displayed (so user won't notice any slowdown).
+ * This is basically the code of the private Elgg core _elgg_cron_run() function.
+ * It needs someone to view a page to trigger the hooks. If necessary it triggers all
+ * cron hooks that are overdue since the last page view.
  *
  */
 function crontrigger_shutdownhook() {
-	$minute = 60;
-	$fiveminute = $minute * 5;
-	$fifteenmin = $minute * 15;
-	$halfhour = $minute * 30;
-	$hour = 3600;
-	$day = $hour * 24;
-	$week = $day * 7;
-	$month = $week * 4;
-	$year = $month * 12;
-
 	$now = time();
+	$params = [];
+	$params['time'] = $now;
 
-	ob_start();
-	run_function_once('crontrigger_minute', $now - $minute);
-	run_function_once('crontrigger_fiveminute', $now - $fiveminute);
-	run_function_once('crontrigger_fifteenmin', $now - $fifteenmin);
-	run_function_once('crontrigger_halfhour', $now - $halfhour);
-	run_function_once('crontrigger_hourly', $now - $hour);
-	run_function_once('crontrigger_daily', $now - $day);
-	run_function_once('crontrigger_weekly', $now - $week);
-	run_function_once('crontrigger_monthly', $now - $month);
-	run_function_once('crontrigger_yearly', $now - $year);
-	ob_clean();
+	$periods = [
+		'minute' => 60,
+		'fiveminute' => 300,
+		'fifteenmin' => 900,
+		'halfhour' => 1800,
+		'hourly' => 3600,
+		'daily' => 86400,
+		'weekly' => 604800,
+		'monthly' => 2628000,
+		'yearly' => 31536000,
+		'reboot' => 31536000,
+	];
+
+	$access = elgg_set_ignore_access(true);
+
+	foreach ($periods as $period => $interval) {
+		$key = "cron_latest:$period:ts";
+		$ts = elgg_get_site_entity()->getPrivateSetting($key);
+		$deadline = $ts + $interval;
+
+		if ($now > $deadline) {
+			$msg_key = "cron_latest:$period:msg";
+			$msg = elgg_echo('admin:cron:started', [$period, date('r', time())]);
+			elgg_get_site_entity()->setPrivateSetting($msg_key, $msg);
+
+			ob_start();
+			
+			$old_stdout = elgg_trigger_plugin_hook('cron', $period, $params, '');
+			$std_out = ob_get_clean();
+
+			$period_std_out = $std_out .  $old_stdout;
+
+			elgg_get_site_entity()->setPrivateSetting($msg_key, $period_std_out);
+		}
+	}
+
+	elgg_set_ignore_access($access);
 }
