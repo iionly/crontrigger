@@ -1,13 +1,19 @@
 Changelog
 =========
 
+3.0.0
+-----
+
+- Requires Elgg 3.0 at minimum,
+- Code rewrite for Elgg 3.
+
 2.3.0
 -----
 
 - Requires Elgg 2.3 at minimum,
 - Code rewrite (works in the same way as the private Elgg API _elgg_cron_run() function).
 
-1.8.0
------
+1.8
+---
 
 - Initial release for Elgg 1.8 and newer (version 1.5 of Crontrigger plugin updated).

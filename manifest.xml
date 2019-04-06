@@ -3,7 +3,7 @@
 	<name>Crontrigger</name>
 	<id>crontrigger</id>
 	<author>iionly / Core developers / Curverider Ltd</author>
-	<version>2.3.0</version>
+	<version>3.0.0</version>
 	<category>utility</category>
 	<description>Provides a poor man's cron trigger to trigger cron scripts based on site visits.</description>
 	<website>https://github.com/iionly</website>
@@ -11,6 +11,6 @@
 	<license>GNU General Public License version 2</license>
 	<requires>
 		<type>elgg_release</type>
-		<version>2.3.0</version>
+		<version>3.0.0</version>
 	</requires>
 </plugin_manifest>

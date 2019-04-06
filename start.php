@@ -15,53 +15,89 @@ function crontrigger_init() {
 	elgg_register_event_handler('shutdown', 'system', 'crontrigger_shutdownhook');
 }
 
+function crontrigger_trigger($period) {
+	$access = elgg_set_ignore_access(true);
+	$time = new \DateTime('now');
+	_elgg_services()->cron->setCurrentTime($time);
+	$jobs = _elgg_services()->cron->run([$period], true);
+	elgg_set_ignore_access($access);
+}
+
+function crontrigger_minute() {
+	crontrigger_trigger('minute');
+}
+
+function crontrigger_fiveminute() {
+	crontrigger_trigger('fiveminute');
+}
+
+function crontrigger_fifteenmin() {
+	crontrigger_trigger('fifteenmin');
+}
+
+function crontrigger_halfhour() {
+	crontrigger_trigger('halfhour');
+}
+
+function crontrigger_hourly() {
+	crontrigger_trigger('hourly');
+}
+
+function crontrigger_daily() {
+	crontrigger_trigger('daily');
+}
+
+function crontrigger_weekly() {
+	crontrigger_trigger('weekly');
+}
+
+function crontrigger_monthly() {
+	crontrigger_trigger('monthly');
+}
+
+function crontrigger_yearly() {
+	crontrigger_trigger('yearly');
+}
+
+function crontrigger_once($functionname, $timelastupdatedcheck = 0) {
+	$lastupdated = (int) elgg_get_plugin_setting($functionname, 'crontrigger', 0);
+	if (is_callable($functionname) && $lastupdated <= $timelastupdatedcheck) {
+		$functionname();
+		elgg_set_plugin_setting($functionname, time(), 'crontrigger');
+		return true;
+	} else {
+		return false;
+	}
+}
+
 /**
- * Triggers cron hooks after a page has been displayed (so user won't notice any slowdown).
- * This is basically the code of the private Elgg core _elgg_cron_run() function.
- * It needs someone to view a page to trigger the hooks. If necessary it triggers all
- * cron hooks that are overdue since the last page view.
+ * Call cron hooks after a page has been displayed (so user won't notice any slowdown).
+ *
+ * It uses a mod of now and needs someone to view the page within a certain time period
  *
  */
 function crontrigger_shutdownhook() {
+	$minute = 60;
+	$fiveminute = 300;
+	$fifteenmin = 900;
+	$halfhour = 1800;
+	$hour = 3600;
+	$day = 86400;
+	$week = 604800;
+	$month = 2628000;
+	$year = 31536000;
+
 	$now = time();
-	$params = [];
-	$params['time'] = $now;
 
-	$periods = [
-		'minute' => 60,
-		'fiveminute' => 300,
-		'fifteenmin' => 900,
-		'halfhour' => 1800,
-		'hourly' => 3600,
-		'daily' => 86400,
-		'weekly' => 604800,
-		'monthly' => 2628000,
-		'yearly' => 31536000,
-		'reboot' => 31536000,
-	];
-
-	$access = elgg_set_ignore_access(true);
-
-	foreach ($periods as $period => $interval) {
-		$key = "cron_latest:$period:ts";
-		$ts = elgg_get_site_entity()->getPrivateSetting($key);
-		$deadline = $ts + $interval;
-
-		if ($now > $deadline) {
-			$msg_key = "cron_latest:$period:msg";
-			$msg = elgg_echo('admin:cron:started', [$period, date('r', time())]);
-			elgg_get_site_entity()->setPrivateSetting($msg_key, $msg);
-
-			ob_start();
-			
-			$old_stdout = elgg_trigger_plugin_hook('cron', $period, $params, '');
-			$std_out = ob_get_clean();
-
-			$period_std_out = $std_out .  $old_stdout;
-
-			elgg_get_site_entity()->setPrivateSetting($msg_key, $period_std_out);
-		}
-	}
-
-	elgg_set_ignore_access($access);
+	ob_start();
+	crontrigger_once('crontrigger_minute', $now - $minute);
+	crontrigger_once('crontrigger_fiveminute', $now - $fiveminute);
+	crontrigger_once('crontrigger_fifteenmin', $now - $fifteenmin);
+	crontrigger_once('crontrigger_halfhour', $now - $halfhour);
+	crontrigger_once('crontrigger_hourly', $now - $hour);
+	crontrigger_once('crontrigger_daily', $now - $day);
+	crontrigger_once('crontrigger_weekly', $now - $week);
+	crontrigger_once('crontrigger_monthly', $now - $month);
+	crontrigger_once('crontrigger_yearly', $now - $year);
+	ob_clean();
 }
