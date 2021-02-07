@@ -1,8 +1,8 @@
-Crontrigger plugin for Elgg 3.0 and newer Elgg 3.X
+Crontrigger plugin for Elgg 3.3 and newer Elgg 3.X
 ==================================================
 
-Latest Version: 3.0.0  
-Released: 2019-04-05  
+Latest Version: 3.3.0  
+Released: 2021-02-07  
 Contact: iionly@gmx.de  
 License: GNU General Public License version 2  
 Copyright: (c) iionly 2011

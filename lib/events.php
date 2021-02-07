@@ -9,18 +9,12 @@
  *
  */
 
-elgg_register_event_handler('init', 'system', 'crontrigger_init');
-
-function crontrigger_init() {
-	elgg_register_event_handler('shutdown', 'system', 'crontrigger_shutdownhook');
-}
-
 function crontrigger_trigger($period) {
-	$access = elgg_set_ignore_access(true);
-	$time = new \DateTime('now');
-	_elgg_services()->cron->setCurrentTime($time);
-	$jobs = _elgg_services()->cron->run([$period], true);
-	elgg_set_ignore_access($access);
+	elgg_call(ELGG_IGNORE_ACCESS, function() use($period) {
+		$time = new \DateTime('now');
+		_elgg_services()->cron->setCurrentTime($time);
+		$jobs = _elgg_services()->cron->run([$period], true);
+	});
 }
 
 function crontrigger_minute() {
@@ -76,7 +70,7 @@ function crontrigger_once($functionname, $timelastupdatedcheck = 0) {
  * It uses a mod of now and needs someone to view the page within a certain time period
  *
  */
-function crontrigger_shutdownhook() {
+function crontrigger_shutdownhook(\Elgg\Event $event) {
 	$minute = 60;
 	$fiveminute = 300;
 	$fifteenmin = 900;
