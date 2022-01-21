@@ -54,10 +54,15 @@ function crontrigger_yearly() {
 }
 
 function crontrigger_once($functionname, $timelastupdatedcheck = 0) {
-	$lastupdated = (int) elgg_get_plugin_setting($functionname, 'crontrigger', 0);
+	$plugin = elgg_get_plugin_from_id('crontrigger');
+	if (!$plugin) {
+		return false;
+	}
+	
+	$lastupdated = (int) $plugin->getSetting($functionname, 0);
 	if (is_callable($functionname) && $lastupdated <= $timelastupdatedcheck) {
 		$functionname();
-		elgg_set_plugin_setting($functionname, time(), 'crontrigger');
+		$plugin->setSetting((string)$functionname, time());
 		return true;
 	} else {
 		return false;

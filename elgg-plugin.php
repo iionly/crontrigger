@@ -13,7 +13,11 @@
 require_once(dirname(__FILE__) . '/lib/events.php');
 
 return [
-	'bootstrap' => \CrontriggerBootstrap::class,
+'plugin' => [
+	'name' => 'Crontrigger',
+	'version' => '4.0.0',
+],
+'bootstrap' => \CrontriggerBootstrap::class,
 	'settings' => [
 		'crontrigger_minute' => 0,
 		'crontrigger_fiveminute' => 0,
