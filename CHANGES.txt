@@ -1,6 +1,12 @@
 Changelog
 =========
 
+4.0.0
+-----
+
+- Requires Elgg 4.0 at minimum,
+- Code rewrite for Elgg 4.0 (thanks also to Olivier Seguin).
+
 3.3.1
 -----
 

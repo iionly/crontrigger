@@ -10,10 +10,11 @@
  *
  */
 
-require_once(dirname(__FILE__) . '/lib/events.php');
-
 return [
-	'bootstrap' => \CrontriggerBootstrap::class,
+	'plugin' => [
+		'name' => 'Crontrigger',
+		'version' => '4.0.0',
+	],
 	'settings' => [
 		'crontrigger_minute' => 0,
 		'crontrigger_fiveminute' => 0,
@@ -24,5 +25,12 @@ return [
 		'crontrigger_weekly' => 0,
 		'crontrigger_monthly' => 0,
 		'crontrigger_yearly' => 0,
+	],
+	'events' => [
+		'shutdown' => [
+			'system' => [
+				'Crontrigger\CrontriggerFunctions::crontrigger_shutdownhook' => [],
+			],
+		],
 	],
 ];
