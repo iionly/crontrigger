@@ -3,7 +3,7 @@
 	<name>Crontrigger</name>
 	<id>crontrigger</id>
 	<author>iionly / Core developers / Curverider Ltd</author>
-	<version>3.3.0</version>
+	<version>3.3.1</version>
 	<category>utility</category>
 	<description>Provides a poor man's cron trigger to trigger cron scripts based on site visits.</description>
 	<website>https://github.com/iionly</website>

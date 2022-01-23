@@ -1,6 +1,11 @@
 Changelog
 =========
 
+3.3.1
+-----
+
+- Fix plugin settings names in elgg-plugin.php to match setting names actually used.
+
 3.3.0
 -----
 
